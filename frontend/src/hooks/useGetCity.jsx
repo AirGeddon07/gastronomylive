@@ -16,6 +16,10 @@ navigator.geolocation.getCurrentPosition(async (position)=>{
     const longitude=position.coords.longitude
     dispatch(setLocation({lat:latitude,lon:longitude}))
     const result=await axios.get(`https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&format=json&apiKey=${apiKey}`)
+    {
+    withCredentials: false // ✨ THIS IS THE FIX! It tells Axios: "Do not send cookies to Geoapify!"
+  }
+);
   console.log(result.data)
     dispatch(setCurrentCity(result?.data?.results[0].city||result?.data?.results[0].county
 ))
