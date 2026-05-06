@@ -18,6 +18,10 @@ import { Server } from "socket.io"
 import { socketHandler } from "./socket.js"
 
 const app=express()
+
+// ✨ THE FINAL FIX: Tell Express to trust Render's load balancer so it allows secure cross-domain cookies!
+app.set("trust proxy", 1);
+
 const server=http.createServer(app)
 
 // ✨ NEW: Tells the backend to accept your local frontend OR your future live frontend
