@@ -41,13 +41,19 @@ function CreateEditShop() {
            if (backendImage) {
                formData.append("image", backendImage)
            }
-           const result = await axios.post(`${serverUrl}/api/shop/create-edit`, formData, { withCredentials: true })
+           
+           // ✨ THE FINAL BOSS FIX: Explicitly forcing headers and credentials for FormData
+           const result = await axios.post(`${serverUrl}/api/shop/create-edit`, formData, { 
+               withCredentials: true,
+               headers: { "Content-Type": "multipart/form-data" }
+           })
+           
            dispatch(setMyShopData(result.data))
            setLoading(false)
            navigate("/")
         } catch (error) {
-            console.log(error)
-            setLoading(false)
+             console.error("Submission Error:", error)
+             setLoading(false)
         }
     }
 
