@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* ✨ FIX: This line tells Tailwind v4 to allow manual Dark Mode toggling */
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-[#fff9f6] text-gray-900 transition-colors duration-300 ease-in-out;
+  }
+  .dark body {
+    @apply bg-[#121212] text-gray-100;
+  }
+}
+
+* {
+ /* ya scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge purane versions */
+}
+
+::-webkit-scrollbar, 
+::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
