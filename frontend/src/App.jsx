@@ -24,11 +24,16 @@ import Shop from './pages/Shop'
 import { useEffect } from 'react'
 import { io } from 'socket.io-client'
 import { setSocket } from './redux/userSlice'
-
-// 👇 NEW LINE: Import your new Chatbot component
 import Chatbot from './components/Chatbot' 
 
-export const serverUrl="https://gastronomy.onrender.com" // Note: If your backend is 8000, make sure the Chatbot.jsx fetch URL uses port 8000 too!
+// ✨ NEW: Import Axios
+import axios from 'axios';
+
+export const serverUrl="https://gastronomy.onrender.com" 
+
+// ✨ NEW: The Magic Line! 
+// This forces every single Axios request in your frontend to include the cross-domain cookie.
+axios.defaults.withCredentials = true;
 
 function App() {
   const {userData}=useSelector(state=>state.user)
@@ -56,7 +61,6 @@ function App() {
   },[userData?._id])
 
   return (
-   // 👇 NEW: We wrap everything in an empty fragment tag <> so React doesn't complain about multiple elements
    <>
      <Routes>
       <Route path='/signup' element={!userData?<SignUp/>:<Navigate to={"/"}/>}/>
@@ -74,7 +78,7 @@ function App() {
       <Route path='/shop/:shopId' element={userData?<Shop/>:<Navigate to={"/signin"}/>}/>
      </Routes>
 
-     {/* 👇 NEW LINE: Display the chatbot. By adding {userData && ...}, it will only show up if the user is actually logged in! */}
+     {/* Display the chatbot only if the user is actually logged in! */}
      {userData && <Chatbot />}
    </>
   )
