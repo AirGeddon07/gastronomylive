@@ -19,7 +19,7 @@ function useGetCity() {
             dispatch(setLocation({ lat: latitude, lon: longitude }))
             
             try {
-                // ✨ FIX: The configuration object is now INSIDE the axios.get() call!
+                // ✨ FIX: Clean, perfect syntax for the axios call
                 const result = await axios.get(
                     `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&format=json&apiKey=${apiKey}`,
                     { withCredentials: false } 
