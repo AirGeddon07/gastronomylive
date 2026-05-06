@@ -2,7 +2,8 @@ import User from "../models/user.model.js"
 import bcrypt, { hash } from "bcryptjs"
 import genToken from "../utils/token.js"
 import { sendOtpMail } from "../utils/mail.js"
-export const signUp=async (req,res) => {
+
+export const signUp = async (req, res) => {
     try {
         const {fullName,email,password,mobile,role}=req.body
         let user=await User.findOne({email})
@@ -26,11 +27,13 @@ export const signUp=async (req,res) => {
         })
 
         const token=await genToken(user._id)
-        res.cookie("token",token,{
-            secure:false,
-            sameSite:"strict",
-            maxAge:7*24*60*60*1000,
-            httpOnly:true
+        
+        // ✨ FIX: Updated cookie security for cross-domain access (Vercel -> Render)
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true, 
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000
         })
   
         return res.status(201).json(user)
@@ -40,7 +43,7 @@ export const signUp=async (req,res) => {
     }
 }
 
-export const signIn=async (req,res) => {
+export const signIn = async (req, res) => {
     try {
         const {email,password}=req.body
         const user=await User.findOne({email})
@@ -48,17 +51,19 @@ export const signIn=async (req,res) => {
             return res.status(400).json({message:"User does not exist."})
         }
         
-     const isMatch=await bcrypt.compare(password,user.password)
-     if(!isMatch){
-         return res.status(400).json({message:"incorrect Password"})
-     }
+        const isMatch=await bcrypt.compare(password,user.password)
+        if(!isMatch){
+            return res.status(400).json({message:"incorrect Password"})
+        }
 
         const token=await genToken(user._id)
-        res.cookie("token",token,{
-            secure:false,
-            sameSite:"strict",
-            maxAge:7*24*60*60*1000,
-            httpOnly:true
+        
+        // ✨ FIX: Updated cookie security for cross-domain access
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000
         })
   
         return res.status(200).json(user)
@@ -68,16 +73,21 @@ export const signIn=async (req,res) => {
     }
 }
 
-export const signOut=async (req,res) => {
+export const signOut = async (req, res) => {
     try {
-        res.clearCookie("token")
-return res.status(200).json({message:"log out successfully"})
+        // ✨ FIX: Must pass identical security flags to successfully clear a cross-domain cookie
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        })
+        return res.status(200).json({message:"log out successfully"})
     } catch (error) {
         return res.status(500).json(`sign out error ${error}`)
     }
 }
 
-export const sendOtp=async (req,res) => {
+export const sendOtp = async (req, res) => {
   try {
     const {email}=req.body
     const user=await User.findOne({email})
@@ -96,7 +106,7 @@ export const sendOtp=async (req,res) => {
   }  
 }
 
-export const verifyOtp=async (req,res) => {
+export const verifyOtp = async (req, res) => {
     try {
         const {email,otp}=req.body
         const user=await User.findOne({email})
@@ -113,24 +123,24 @@ export const verifyOtp=async (req,res) => {
     }
 }
 
-export const resetPassword=async (req,res) => {
+export const resetPassword = async (req, res) => {
     try {
         const {email,newPassword}=req.body
         const user=await User.findOne({email})
-    if(!user || !user.isOtpVerified){
-       return res.status(400).json({message:"otp verification required"})
-    }
-    const hashedPassword=await bcrypt.hash(newPassword,10)
-    user.password=hashedPassword
-    user.isOtpVerified=false
-    await user.save()
-     return res.status(200).json({message:"password reset successfully"})
+        if(!user || !user.isOtpVerified){
+           return res.status(400).json({message:"otp verification required"})
+        }
+        const hashedPassword=await bcrypt.hash(newPassword,10)
+        user.password=hashedPassword
+        user.isOtpVerified=false
+        await user.save()
+        return res.status(200).json({message:"password reset successfully"})
     } catch (error) {
          return res.status(500).json(`reset password error ${error}`)
     }
 }
 
-export const googleAuth=async (req,res) => {
+export const googleAuth = async (req, res) => {
     try {
         const {fullName,email,mobile,role}=req.body
         let user=await User.findOne({email})
@@ -141,15 +151,16 @@ export const googleAuth=async (req,res) => {
         }
 
         const token=await genToken(user._id)
-        res.cookie("token",token,{
-            secure:false,
-            sameSite:"strict",
-            maxAge:7*24*60*60*1000,
-            httpOnly:true
+        
+        // ✨ FIX: Updated cookie security for cross-domain access
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000
         })
   
         return res.status(200).json(user)
-
 
     } catch (error) {
          return res.status(500).json(`googleAuth error ${error}`)
