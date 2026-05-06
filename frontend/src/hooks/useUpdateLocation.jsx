@@ -2,15 +2,13 @@ import axios from 'axios'
 import React, { useEffect } from 'react'
 import { serverUrl } from '../App'
 import { useDispatch, useSelector } from 'react-redux'
-// (Keep your imports exactly as they are)
 
 function useUpdateLocation() {
     const dispatch = useDispatch()
     const { userData } = useSelector(state => state.user)
 
     useEffect(() => {
-        // ✨ FIX 1: If the user is NOT logged in, don't run the location watcher at all!
-        // This stops the 400 Bad Request errors dead in their tracks.
+        // Stop immediately if the user is not logged in
         if (!userData) return;
 
         const updateLocation = async (lat, lon) => {
@@ -26,21 +24,23 @@ function useUpdateLocation() {
             }
         }
 
-        // ✨ FIX 2: We save the ID of the watcher to a variable
-        const watchId = navigator.geolocation.watchPosition(
-            (pos) => {
-                updateLocation(pos.coords.latitude, pos.coords.longitude)
-            },
-            (error) => console.error("GPS Watcher Error:", error),
-            // Optional but recommended: Tells the browser not to spam the function too fast
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
-        )
-
-        // ✨ FIX 3: THE MAGIC CLEANUP FUNCTION!
-        // When the component unmounts or updates, this instantly kills the old loop
-        // so you never have more than 1 watcher running at a time.
-        return () => {
-            navigator.geolocation.clearWatch(watchId);
+        // ✨ THE FIX: Check the user's role!
+        if (userData.role === 'deliveryBoy') {
+            // ONLY Delivery Boys get the aggressive live-tracking
+            const watchId = navigator.geolocation.watchPosition(
+                (pos) => updateLocation(pos.coords.latitude, pos.coords.longitude),
+                (error) => console.error("GPS Watcher Error:", error),
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+            )
+            return () => navigator.geolocation.clearWatch(watchId);
+            
+        } else {
+            // For Shop Owners and normal Users, just grab the location ONCE.
+            // This instantly stops the spam and prevents your app from freezing!
+            navigator.geolocation.getCurrentPosition(
+                (pos) => updateLocation(pos.coords.latitude, pos.coords.longitude),
+                (error) => console.error("GPS Error:", error)
+            )
         }
         
     }, [userData])
